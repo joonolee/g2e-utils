@@ -7,6 +7,8 @@ import org.apache.commons.io.IOUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -53,8 +55,8 @@ public class Params extends HashMap<String, String[]> {
         if (ServletFileUpload.isMultipartContent(request)) {
             try {
                 DiskFileItemFactory factory = new DiskFileItemFactory();
-                //factory.setSizeThreshold(Config.getInstance().getInt("fileupload.sizeThreshold"));
-                //factory.setRepository(new File(Config.getInstance().getString("fileupload.repository")));
+                factory.setSizeThreshold(10485760);
+                factory.setRepository(new File("/tmp"));
                 ServletFileUpload upload = new ServletFileUpload(factory);
                 //upload.setSizeMax(Config.getInstance().getInt("fileupload.sizeMax"));
                 @SuppressWarnings("unchecked")
