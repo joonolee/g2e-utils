@@ -21,7 +21,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 
 /**
- * 요청객체, 쿠키객체의 값을 담는 해시테이블 클래스
+ * 요청객체, 쿠키객체의 값을 담는 파라미터 클래스
  * 요청객체의 파라미터를 추상화 하여 Params 를 생성해 놓고 파라미터이름을 키로 해당 값을 원하는 데이타 타입으로 반환받는다.
  */
 public class Params {
@@ -39,11 +39,11 @@ public class Params {
 	}
 
 	/**
-	 * 요청객체의 파라미터 이름과 값을 저장한 해시테이블을 생성한다.
+	 * 요청객체의 파라미터 이름과 값을 저장한 파라미터 객체를 생성한다.
 	 * <br>
 	 * ex) request Params 객체를 얻는 경우 : Params params = Params.getParams(request)
 	 * @param request HTTP 클라이언트 요청객체
-	 * @return 요청Params 객체
+	 * @return 요청 Params 객체
 	 */
 	public static Params getParams(HttpServletRequest request) {
 		Params params = new Params("Params");
@@ -56,9 +56,8 @@ public class Params {
 			try {
 				DiskFileItemFactory factory = new DiskFileItemFactory();
 				factory.setSizeThreshold(10485760);
-				factory.setRepository(new File("/tmp"));
+				factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
 				ServletFileUpload upload = new ServletFileUpload(factory);
-				//upload.setSizeMax(Config.getInstance().getInt("fileupload.sizeMax"));
 				@SuppressWarnings("unchecked")
 				List<FileItem> items = upload.parseRequest(request);
 				for (FileItem item : items) {
@@ -89,11 +88,11 @@ public class Params {
 	}
 
 	/**
-	 * 요청객체의 쿠키 이름과 값을 저장한 해시테이블을 생성한다.
+	 * 요청객체의 쿠키 이름과 값을 저장한 파라미터 객체를 생성한다.
 	 * <br>
 	 * ex) cookie Params 객체를 얻는 경우 : Params params = Params.getParamsFromCookie(request)
 	 * @param request HTTP 클라이언트 요청객체
-	 * @return 쿠키Params 객체
+	 * @return 쿠키 Params 객체
 	 */
 	public static Params getParamsFromCookie(HttpServletRequest request) {
 		Params cookieParams = new Params("Cookie");
@@ -107,7 +106,7 @@ public class Params {
 	}
 
 	/**
-	 * 요청객체의 헤더 이름과 값을 저장한 해시테이블을 생성한다.
+	 * 요청객체의 헤더 이름과 값을 저장한 파라미터 객체를 생성한다.
 	 * <br>
 	 * ex) header Params 객체를 얻는 경우 : Params params = Params.getParamsFromHeader(request)
 	 * @param request HTTP 클라이언트 요청객체
