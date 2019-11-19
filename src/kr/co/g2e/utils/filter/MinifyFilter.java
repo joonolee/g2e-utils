@@ -1,6 +1,9 @@
 package kr.co.g2e.utils.filter;
 
-import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -11,10 +14,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+
+import com.googlecode.htmlcompressor.compressor.HtmlCompressor;
 
 /**
  * HTML, JavaScript, CSS Minify filter
