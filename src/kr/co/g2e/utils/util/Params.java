@@ -20,6 +20,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 
+import kr.co.g2e.utils.config.Config;
+
 /**
  * 요청객체, 쿠키객체의 값을 담는 파라미터 클래스
  * 요청객체의 파라미터를 추상화 하여 Params 를 생성해 놓고 파라미터이름을 키로 해당 값을 원하는 데이타 타입으로 반환받는다.
@@ -55,9 +57,10 @@ public class Params {
 		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				DiskFileItemFactory factory = new DiskFileItemFactory();
-				factory.setSizeThreshold(10485760);
-				factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+				factory.setSizeThreshold(Config.getInstance().getInt("fileupload.sizeThreshold", 10485760));
+				factory.setRepository(new File(Config.getInstance().getString("fileupload.repository", System.getProperty("java.io.tmpdir"))));
 				ServletFileUpload upload = new ServletFileUpload(factory);
+				upload.setSizeMax(Config.getInstance().getInt("fileupload.sizeMax", 104857600));
 				@SuppressWarnings("unchecked")
 				List<FileItem> items = upload.parseRequest(request);
 				for (FileItem item : items) {
