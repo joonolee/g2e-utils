@@ -57,10 +57,10 @@ public class Params {
 		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				DiskFileItemFactory factory = new DiskFileItemFactory();
-				factory.setSizeThreshold(Config.getInstance().getInt("fileupload.sizeThreshold", 10485760));
+				factory.setSizeThreshold(Config.getInstance().getInt("fileupload.size_threshold", 10485760));
 				factory.setRepository(new File(Config.getInstance().getString("fileupload.repository", System.getProperty("java.io.tmpdir"))));
 				ServletFileUpload upload = new ServletFileUpload(factory);
-				upload.setSizeMax(Config.getInstance().getInt("fileupload.sizeMax", 104857600));
+				upload.setSizeMax(Config.getInstance().getLong("fileupload.size_max", 104857600L));
 				@SuppressWarnings("unchecked")
 				List<FileItem> items = upload.parseRequest(request);
 				for (FileItem item : items) {

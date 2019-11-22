@@ -38,10 +38,12 @@ public class RequestLoggingFilter implements Filter {
 		if (logger.isDebugEnabled()) {
 			currTime = System.nanoTime();
 			logger.debug("★★★ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 시작되었습니다");
-			logger.debug("ContentLength : " + reqWrapper.getContentLength() + " bytes");
+			logger.debug("ContentLength: " + reqWrapper.getContentLength() + " bytes");
 			logger.debug(Params.getParamsFromHeader(reqWrapper).toString());
 			logger.debug(Params.getParamsFromCookie(reqWrapper).toString());
-			logger.debug(Params.getParams(reqWrapper).toString());
+			Params reqParams = Params.getParams(reqWrapper);
+			logger.debug(reqParams.toString());
+			logger.debug("ReqBody={ " + reqParams.getBody() + " }");
 		}
 		filterChain.doFilter(reqWrapper, response);
 		if (logger.isDebugEnabled()) {
