@@ -36,7 +36,7 @@ public class RequestLoggingFilter implements Filter {
 		MyRequestWrapper reqWrapper = new MyRequestWrapper((HttpServletRequest) request); // 요청 Body를 여러번 읽을 수 있도록 Wrapper로 감싼다.
 		long currTime = 0;
 		if (logger.isDebugEnabled()) {
-			currTime = System.nanoTime();
+			currTime = System.currentTimeMillis();
 			logger.debug("★★★ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 시작되었습니다");
 			logger.debug("ContentLength: " + reqWrapper.getContentLength() + " bytes");
 			logger.debug(Params.getParamsFromHeader(reqWrapper).toString());
@@ -47,7 +47,7 @@ public class RequestLoggingFilter implements Filter {
 		}
 		filterChain.doFilter(reqWrapper, response);
 		if (logger.isDebugEnabled()) {
-			logger.debug("☆☆☆ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 종료되었습니다 | duration : " + (System.nanoTime() - currTime) + " ns\n");
+			logger.debug("☆☆☆ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 종료되었습니다 | duration : " + (System.currentTimeMillis() - currTime) + " ms\n");
 		}
 	}
 
