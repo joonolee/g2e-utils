@@ -19,8 +19,8 @@ import kr.co.g2e.utils.util.StringUtil;
 /**
  * 요청과 응답을 로깅 하는 필터
  */
-public class LoggingFilter implements Filter {
-	private static final Log logger = LogFactory.getLog(LoggingFilter.class);
+public class RequestResponseLoggingFilter implements Filter {
+	private static final Log logger = LogFactory.getLog(RequestResponseLoggingFilter.class);
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
