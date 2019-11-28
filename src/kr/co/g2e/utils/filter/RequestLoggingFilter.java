@@ -7,6 +7,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -41,13 +45,11 @@ public class RequestLoggingFilter implements Filter {
 			logger.debug("ContentLength: " + reqWrapper.getContentLength() + " bytes");
 			logger.debug(Params.getParamsFromHeader(reqWrapper).toString());
 			logger.debug(Params.getParamsFromCookie(reqWrapper).toString());
-			Params reqParams = Params.getParams(reqWrapper);
-			logger.debug(reqParams.toString());
-			logger.debug("ReqBody={ " + reqParams.getBody() + " }");
+			logger.debug(Params.getParams(reqWrapper).toString());
 		}
 		filterChain.doFilter(reqWrapper, response);
 		if (logger.isDebugEnabled()) {
-			logger.debug("☆☆☆ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 종료되었습니다 | duration : " + (System.currentTimeMillis() - currTime) + " ms\n");
+			logger.debug("☆☆☆ " + getIpAddr(reqWrapper) + " 로 부터 \"" + reqWrapper.getMethod() + " " + reqWrapper.getRequestURI() + "\" 요청이 종료되었습니다 | duration : " + (System.currentTimeMillis() - currTime) + " ms");
 		}
 	}
 
@@ -67,24 +69,54 @@ public class RequestLoggingFilter implements Filter {
 	 * 요청 본문(Body)를 여러번 읽을 수 있도록 만드는 Wrapper 객체
 	 */
 	class MyRequestWrapper extends HttpServletRequestWrapper {
-		private byte[] requestBody;
-		private Charset charset;
+		private final byte[] requestBody; // 요청본문
+		private final Charset charset; // 캐릭터셋
+		private final Map<String, String[]> parameterMap = new HashMap<String, String[]>(); // 파라미터 맵
 
 		public MyRequestWrapper(HttpServletRequest request) {
 			super(request);
 			String charEncoding = request.getCharacterEncoding(); // 인코딩
+			for (Object obj : request.getParameterMap().keySet()) {
+				String key = (String) obj;
+				parameterMap.put(key, request.getParameterValues(key));
+			}
 			this.charset = StringUtil.isEmpty(charEncoding) ? StandardCharsets.UTF_8 : Charset.forName(charEncoding);
 			try {
 				InputStream is = request.getInputStream();
-				this.requestBody = IOUtils.toByteArray(is);
+				requestBody = IOUtils.toByteArray(is);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 
 		@Override
+		public String getParameter(String name) {
+			String[] values = parameterMap.get(name);
+			if (values == null) {
+				return null;
+			}
+			return values[0];
+		}
+
+		@Override
+		public Map<String, String[]> getParameterMap() {
+			return Collections.unmodifiableMap(parameterMap);
+		}
+
+		@Override
+		@SuppressWarnings("rawtypes")
+		public Enumeration getParameterNames() {
+			return Collections.enumeration(parameterMap.keySet());
+		}
+
+		@Override
+		public String[] getParameterValues(String name) {
+			return parameterMap.get(name);
+		}
+
+		@Override
 		public ServletInputStream getInputStream() {
-			final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.requestBody);
+			final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(requestBody);
 			return new ServletInputStream() {
 				@Override
 				public int read() {

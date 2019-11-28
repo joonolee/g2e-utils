@@ -526,6 +526,10 @@ public class Params {
 			}
 			buf.append(key + "=" + value);
 		}
+		if (currentRow > 0) {
+			buf.append(", ");
+		}
+		buf.append("__body__=" + getBody());
 		buf.append(" }");
 		return name + "=" + buf.toString();
 	}
