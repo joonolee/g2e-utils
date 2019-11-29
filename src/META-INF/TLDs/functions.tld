@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+
+	<tlib-version>1.0</tlib-version>
+
+	<short-name>functions</short-name>
+
+	<uri>g2e-utils.functions</uri>
+
+	<function>
+		<name>tokenFn</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String[] tokenFn(java.lang.String, java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>limitString</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String limitString(java.lang.String, int)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>nalDesign</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String nalDesign(java.lang.String, int)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>replaceStr</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String replaceStr(java.lang.String, java.lang.String, java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>stringByteToHumanReadable</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String byteToHumanReadable(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>longByteToHumanReadable</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String byteToHumanReadable(long)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>convertKorean</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String convertKorean(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>convertUTF8</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String convertUTF8(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>numberFormat</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String numberFormat(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>nullToBlankString</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String nullToBlankString(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>null2Str</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String null2Str(java.lang.String, java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>makeToday</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String makeToday(int)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>moveDate</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String moveDate(java.lang.String, int, int)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>isNew</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			boolean isNew(java.lang.String, int)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>stripTag</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String stripTag(java.lang.String)
+		</function-signature>
+	</function>
+
+	<function>
+		<name>stripScriptTag</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String stripScriptTag(java.lang.String)
+		</function-signature>
+	</function>
+	
+	<function>
+		<name>escapeHtmlSpecialChars</name>
+		<function-class>kr.co.g2e.utils.util.StringUtil</function-class>
+		<function-signature>
+			java.lang.String escapeHtmlSpecialChars(java.lang.String)
+		</function-signature>
+	</function>
+
+</taglib>
