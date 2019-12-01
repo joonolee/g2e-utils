@@ -27,6 +27,7 @@ import kr.co.g2e.utils.config.Config;
  * 요청객체의 파라미터를 추상화 하여 Params 를 생성해 놓고 파라미터이름을 키로 해당 값을 원하는 데이타 타입으로 반환받는다.
  */
 public class Params {
+	private static final Config config = Config.getInstance();
 	private final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
 	private final List<FileItem> fileItems = new ArrayList<FileItem>();
 	private String name = "";
@@ -57,10 +58,10 @@ public class Params {
 		if (ServletFileUpload.isMultipartContent(request)) {
 			try {
 				DiskFileItemFactory factory = new DiskFileItemFactory();
-				factory.setSizeThreshold(Config.getInstance().getInt("fileupload.size_threshold", 10485760));
-				factory.setRepository(new File(Config.getInstance().getString("fileupload.repository", System.getProperty("java.io.tmpdir"))));
+				factory.setSizeThreshold(config.getInt("fileupload.size_threshold", 10485760));
+				factory.setRepository(new File(config.getString("fileupload.repository", System.getProperty("java.io.tmpdir"))));
 				ServletFileUpload upload = new ServletFileUpload(factory);
-				upload.setSizeMax(Config.getInstance().getLong("fileupload.size_max", 104857600L));
+				upload.setSizeMax(config.getLong("fileupload.size_max", 104857600L));
 				@SuppressWarnings("unchecked")
 				List<FileItem> items = upload.parseRequest(request);
 				for (FileItem item : items) {
@@ -525,6 +526,12 @@ public class Params {
 				buf.append(", ");
 			}
 			buf.append(key + "=" + value);
+		}
+		if (fileItems.size() > 0) {
+			if (currentRow > 0) {
+				buf.append(", ");
+			}
+			buf.append("__fileItems__=" + fileItems.toString());
 		}
 		buf.append(" }");
 		return name + "=" + buf.toString();
