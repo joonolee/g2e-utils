@@ -18,8 +18,8 @@ import org.apache.commons.logging.LogFactory;
 /**
  * OZ Report 를 이용하여 개발할 때 이용할 수 있는 유틸리티 클래스
  */
-public final class OzUtil {
-	private static final Log logger = LogFactory.getLog(OzUtil.class);
+public final class OZUtil {
+	private static final Log logger = LogFactory.getLog(OZUtil.class);
 
 	/**
 	 * 디폴트 열 구분자
@@ -34,7 +34,7 @@ public final class OzUtil {
 	/**
 	 * 생성자, 외부에서 객체를 인스턴스화 할 수 없도록 설정
 	 */
-	private OzUtil() {
+	private OZUtil() {
 	}
 
 	/**
