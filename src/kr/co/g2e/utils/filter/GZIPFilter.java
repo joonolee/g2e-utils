@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 /**
  * GZIP Compression filter
  */
-public class GzipFilter implements Filter {
+public class GZIPFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {

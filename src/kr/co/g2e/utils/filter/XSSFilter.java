@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 /**
  * Anti cross-site scripting (XSS) filter
  */
-public class XssFilter implements Filter {
+public class XSSFilter implements Filter {
 	// Avoid anything between script tags
 	private static final Pattern scriptPattern1 = Pattern.compile("<script>(.*?)</script>", Pattern.CASE_INSENSITIVE);
 
