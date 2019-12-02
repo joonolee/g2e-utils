@@ -482,6 +482,15 @@ public class Params {
 	}
 
 	/**
+	 * 키(key)에 매핑되는 스트링을 삭제한다.
+	 * @param key 값을 찾기 위한 키 문자열
+	 * @return 원래 key에 매핑되어 있는 스트링 배열
+	 */
+	public String[] remove(String key) {
+		return parameterMap.remove(key);
+	}
+
+	/**
 	 * Param 객체가 가지고 있는 값들을 화면 출력을 위해 문자열로 변환한다.
 	 * @return 화면에 출력하기 위해 변환된 문자열
 	 */
