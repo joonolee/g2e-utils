@@ -527,12 +527,6 @@ public class Params {
 			}
 			buf.append(key + "=" + value);
 		}
-		if (fileItems.size() > 0) {
-			if (currentRow > 0) {
-				buf.append(", ");
-			}
-			buf.append("__fileItems__=" + fileItems.toString());
-		}
 		buf.append(" }");
 		return name + "=" + buf.toString();
 	}
