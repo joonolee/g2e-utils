@@ -28,6 +28,7 @@
 	<classpathentry kind="lib" path="lib/jedis-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/poi-3.10.1.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.10.1.jar"/>
