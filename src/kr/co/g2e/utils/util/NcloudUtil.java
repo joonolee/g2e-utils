@@ -42,31 +42,31 @@ public final class NcloudUtil {
 
 	/**
 	 * SMS 발송(90바이트 이하)
-	 * @param serviceId 서비스아이디
 	 * @param accessKey 엑세스키
 	 * @param secretKey 시크릿키
+	 * @param serviceId 서비스아이디
 	 * @param from 발신번호
 	 * @param content 메시지 내용
 	 * @param to 수신번호(-를 제외한 숫자만 입력 가능)
 	 * @return 응답결과
 	 */
-	public static Map<String, Object> sendSms(String serviceId, String accessKey, String secretKey, String from, String content, String to) {
-		return sendSmsLms(serviceId, accessKey, "SMS", secretKey, from, "", content, to);
+	public static Map<String, Object> sendSms(String accessKey, String secretKey, String serviceId, String from, String content, String to) {
+		return sendSmsLms(accessKey, secretKey, serviceId, "SMS", from, "", content, to);
 	}
 
 	/**
 	 * LMS 발송(90바이트 초과)
-	 * @param serviceId 서비스아이디
 	 * @param accessKey 엑세스키
 	 * @param secretKey 시크릿키
+	 * @param serviceId 서비스아이디
 	 * @param from 발신번호
 	 * @param subject 메시지 제목
 	 * @param content 메시지 내용
 	 * @param to 수신번호(-를 제외한 숫자만 입력 가능)
 	 * @return 응답결과
 	 */
-	public static Map<String, Object> sendLms(String serviceId, String accessKey, String secretKey, String from, String subject, String content, String to) {
-		return sendSmsLms(serviceId, accessKey, "LMS", secretKey, from, subject, content, to);
+	public static Map<String, Object> sendLms(String accessKey, String secretKey, String serviceId, String from, String subject, String content, String to) {
+		return sendSmsLms(accessKey, secretKey, serviceId, "LMS", from, subject, content, to);
 	}
 
 	/**
@@ -106,9 +106,9 @@ public final class NcloudUtil {
 
 	/**
 	 * SMS/LMS 발송
-	 * @param serviceId 서비스아이디
 	 * @param accessKey 엑세스키
 	 * @param secretKey 시크릿키
+	 * @param serviceId 서비스아이디
 	 * @param type SMS Type - SMS, LMS, MMS(소문자 가능)
 	 * @param from 발신번호
 	 * @param subject 메시지 제목
@@ -117,7 +117,7 @@ public final class NcloudUtil {
 	 * @return 응답결과
 	 */
 	@SuppressWarnings("unchecked")
-	private static Map<String, Object> sendSmsLms(String serviceId, String accessKey, String secretKey, String type, String from, String subject, String content, String to) {
+	private static Map<String, Object> sendSmsLms(String accessKey, String secretKey, String serviceId, String type, String from, String subject, String content, String to) {
 		/* 헤더 설명
 		[필수]Content-Type: 요청 Body Content Type을 application/json으로 지정
 		[필수]x-ncp-apigw-timestamp: 1970년 1월 1일 00:00:00 협정 세계시(UTC)부터의 경과 시간을 밀리초(Millisecond)로 나타낸 것이다. API Gateway 서버와 시간 차가 5분 이상 나는 경우 유효하지 않은 요청으로 간주
@@ -170,24 +170,14 @@ public final class NcloudUtil {
 			if (result.getStatusCode() == 202) {
 				String json = result.getContent();
 				resultMap = (Map<String, Object>) JsonUtil.parse(json);
-				if ("202".equals(resultMap.get("statusCode"))) { // 성공
-					resultMap.put("ok", Boolean.TRUE);
-					resultMap.put("code", resultMap.get("statusCode"));
-					resultMap.put("msg", resultMap.get("statusName"));
-				} else {
-					resultMap.put("ok", Boolean.FALSE);
-					resultMap.put("code", resultMap.get("statusCode"));
-					resultMap.put("msg", resultMap.get("statusName"));
-				}
+				resultMap.put("ok", Boolean.TRUE);
 			} else { // 실패
 				resultMap.put("ok", Boolean.FALSE);
-				resultMap.put("code", result.getStatusCode());
-				resultMap.put("msg", "Http 통신 실패");
 			}
 		} catch (Throwable e) {
 			resultMap.put("ok", Boolean.FALSE);
-			resultMap.put("code", 999);
-			resultMap.put("msg", "Http 통신 실패");
+			resultMap.put("statusCode", 999);
+			resultMap.put("statusName", "Http 통신 실패");
 		}
 		return resultMap;
 	}
@@ -260,8 +250,6 @@ public final class NcloudUtil {
 			}
 		} catch (Throwable e) {
 			resultMap.put("ok", Boolean.FALSE);
-			resultMap.put("code", 999);
-			resultMap.put("msg", "Http 통신 실패");
 		}
 		return resultMap;
 	}
