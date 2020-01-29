@@ -78,6 +78,21 @@ public final class NcloudUtil {
 	 * @param templateSid 템플릿 아이디
 	 * @param toEmail 수신자 이메일주소
 	 * @param toName 수신자명
+	 * @return
+	 */
+	public static Map<String, Object> sendEmail(String accessKey, String secretKey, String fromEmail, String fromName, Integer templateSid, String toEmail, String toName) {
+		return sendEmail(accessKey, secretKey, fromEmail, fromName, templateSid, "", "", toEmail, toName, null);
+	}
+
+	/**
+	 * 이메일 발송(템플릿, 파라미터 바인딩 사용)
+	 * @param accessKey 엑세스키
+	 * @param secretKey 시크릿키
+	 * @param fromEmail 발신자 이메일주소
+	 * @param fromName 발신자명
+	 * @param templateSid 템플릿 아이디
+	 * @param toEmail 수신자 이메일주소
+	 * @param toName 수신자명
 	 * @param parameters 치환 파라미터
 	 * @return 응답결과
 	 */
@@ -87,6 +102,22 @@ public final class NcloudUtil {
 
 	/**
 	 * 이메일 발송
+	 * @param accessKey 엑세스키
+	 * @param secretKey 시크릿키
+	 * @param fromEmail 발신자 이메일주소
+	 * @param fromName 발신자명
+	 * @param subject 메일 제목
+	 * @param content 메일 본분
+	 * @param toEmail 수신자 이메일주소
+	 * @param toName 수신자명
+	 * @return 응답결과
+	 */
+	public static Map<String, Object> sendEmail(String accessKey, String secretKey, String fromEmail, String fromName, String subject, String content, String toEmail, String toName) {
+		return sendEmail(accessKey, secretKey, fromEmail, fromName, null, subject, content, toEmail, toName, null);
+	}
+
+	/**
+	 * 이메일 발송(파라미터 바인딩 사용)
 	 * @param accessKey 엑세스키
 	 * @param secretKey 시크릿키
 	 * @param fromEmail 발신자 이메일주소
@@ -156,7 +187,7 @@ public final class NcloudUtil {
 		paramMap.put("content", content);
 		Map<String, String> messagesMap = new HashMap<String, String>();
 		messagesMap.put("to", to);
-		paramMap.put("messages", messagesMap);
+		paramMap.put("messages", Arrays.asList(messagesMap));
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			// 요청
@@ -167,9 +198,9 @@ public final class NcloudUtil {
 			[필수]statusCode: 요청 상태 코드. 202 - 성공, 그외 - 실패(String)
 			[필수]statusName: 요청 상태명. success - 성공, fail - 실패(String)
 			 */
+			String json = result.getContent();
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
 			if (result.getStatusCode() == 202) {
-				String json = result.getContent();
-				resultMap = (Map<String, Object>) JsonUtil.parse(json);
 				resultMap.put("ok", Boolean.TRUE);
 			} else { // 실패
 				resultMap.put("ok", Boolean.FALSE);
@@ -241,9 +272,9 @@ public final class NcloudUtil {
 			[필수]requestId: Email 발송 요청 ID (각 요청을 구분하는 ID, 한번에 여러건에 메일 발송을 요청할 경우 requestId가 여러개의 mailId를 포함할 수 있다.(String)
 			[필수]count: 메일 요청 건수(Integer)	
 			 */
+			String json = result.getContent();
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
 			if (result.getStatusCode() == 201) {
-				String json = result.getContent();
-				resultMap = (Map<String, Object>) JsonUtil.parse(json);
 				resultMap.put("ok", Boolean.TRUE);
 			} else { // 실패
 				resultMap.put("ok", Boolean.FALSE);
