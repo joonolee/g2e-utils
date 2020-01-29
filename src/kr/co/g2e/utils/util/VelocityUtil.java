@@ -66,7 +66,7 @@ public final class VelocityUtil {
 			String fileName = ((String) viewsBundle.getObject(key)).trim();
 			String template = readTemplate(sc, fileName, fileEncoding);
 			StringReader reader = new StringReader(template);
-			Velocity.evaluate(context, writer, "framework.util.VelocityUtil", reader);
+			Velocity.evaluate(context, writer, "kr.co.g2e.utils.util.VelocityUtil", reader);
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
