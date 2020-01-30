@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ResourceBundle;
 
 import javax.servlet.ServletContext;
 
@@ -33,13 +32,13 @@ public final class VelocityUtil {
 	 * <br>
 	 * Sql 문장생성 및 이메일 발송을 위한 템플릿 생성할때 응용할 수 있다.
 	 * @param sc 서블릿 컨텍스트 객체
-	 * @param key views.properties에 등록한 템플릿의 키 문자열
+	 * @param filePath 템플릿의 파일경로 문자열
 	 * @param statement 문장식별 문자열
 	 * @param param 파라미터 객체
 	 * @return 템플릿이 적용된 문자열
 	 */
-	public static String render(ServletContext sc, String key, String statement, Object param) {
-		return render(sc, key, statement, param, "UTF8");
+	public static String render(ServletContext sc, String filePath, String statement, Object param) {
+		return render(sc, filePath, statement, param, "UTF8");
 	}
 
 	/**
@@ -48,13 +47,13 @@ public final class VelocityUtil {
 	 * <br>
 	 * Sql 문장생성 및 이메일 발송을 위한 템플릿 생성할때 응용할 수 있다.
 	 * @param sc 서블릿 컨텍스트 객체
-	 * @param key views.properties에 등록한 템플릿의 키 문자열
+	 * @param filePath 템플릿의 파일경로 문자열
 	 * @param statement 문장식별 문자열
 	 * @param param 파라미터 객체
 	 * @param fileEncoding 파일인코딩
 	 * @return 템플릿이 적용된 문자열
 	 */
-	public static String render(ServletContext sc, String key, String statement, Object param, String fileEncoding) {
+	public static String render(ServletContext sc, String filePath, String statement, Object param, String fileEncoding) {
 		StringWriter writer = new StringWriter();
 		try {
 			Velocity.init();
@@ -62,9 +61,7 @@ public final class VelocityUtil {
 			context.put("COMMAND", statement);
 			context.put("PARAM", param);
 			context.put("UTIL", StringUtil.class);
-			ResourceBundle viewsBundle = (ResourceBundle) sc.getAttribute("views-mapping");
-			String fileName = ((String) viewsBundle.getObject(key)).trim();
-			String template = readTemplate(sc, fileName, fileEncoding);
+			String template = readTemplate(sc, filePath, fileEncoding);
 			StringReader reader = new StringReader(template);
 			Velocity.evaluate(context, writer, "kr.co.g2e.utils.util.VelocityUtil", reader);
 		} catch (Throwable e) {
@@ -76,19 +73,18 @@ public final class VelocityUtil {
 	/**
 	 * 템플릿파일을 읽어들인다.
 	 */
-	private static String readTemplate(ServletContext sc, String fileName, String fileEncoding) {
-		String pathFile = sc.getRealPath(fileName);
-		return read(pathFile, fileEncoding);
+	private static String readTemplate(ServletContext sc, String filePath, String fileEncoding) {
+		return read(sc.getRealPath(filePath), fileEncoding);
 	}
 
 	/**
 	 * 파일의 path의 파일 내용 읽어서 String으로 리턴한다
 	 */
-	private static String read(String pathFile, String fileEncoding) {
+	private static String read(String filePath, String fileEncoding) {
 		StringBuilder ta = new StringBuilder();
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(pathFile), fileEncoding));
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), fileEncoding));
 			String line;
 			while ((line = br.readLine()) != null) {
 				ta.append(line + "\n");
