@@ -1,8 +1,8 @@
 package kr.co.g2e.utils.util;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -74,17 +74,17 @@ public final class VelocityUtil {
 	 * 템플릿파일을 읽어들인다.
 	 */
 	private static String readTemplate(ServletContext sc, String filePath, String fileEncoding) {
-		return read(sc.getRealPath(filePath), fileEncoding);
+		return read(sc.getResourceAsStream(filePath), fileEncoding);
 	}
 
 	/**
 	 * 파일의 path의 파일 내용 읽어서 String으로 리턴한다
 	 */
-	private static String read(String filePath, String fileEncoding) {
+	private static String read(InputStream is, String fileEncoding) {
 		StringBuilder ta = new StringBuilder();
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), fileEncoding));
+			br = new BufferedReader(new InputStreamReader(is, fileEncoding));
 			String line;
 			while ((line = br.readLine()) != null) {
 				ta.append(line + "\n");
