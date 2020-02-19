@@ -1,6 +1,7 @@
 package kr.co.g2e.utils.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,19 +9,17 @@ import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.util.EntityUtils;
 
 /**
@@ -101,11 +100,21 @@ public final class HttpUtil {
 	public static Result get(String url, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
 		String content = "";
-		HttpClient httpClient = null;
+		CloseableHttpClient httpClient = null;
 		try {
-			httpClient = new DefaultHttpClient();
 			if (timeoutMilliseconds > 0) {
-				httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, timeoutMilliseconds);
+				RequestConfig requestConfig = RequestConfig.custom()
+					.setSocketTimeout(timeoutMilliseconds)
+					.build();
+				SocketConfig socketConfig = SocketConfig.custom()
+					.setSoTimeout(timeoutMilliseconds)
+					.build();
+				httpClient = HttpClients.custom()
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultSocketConfig(socketConfig)
+					.build();
+			} else {
+				httpClient = HttpClients.createDefault();
 			}
 			HttpGet httpGet = new HttpGet(url);
 			if (headerMap != null) {
@@ -123,7 +132,10 @@ public final class HttpUtil {
 			throw new RuntimeException(e);
 		} finally {
 			if (httpClient != null) {
-				httpClient.getConnectionManager().shutdown();
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		return new Result(statusCode, content);
@@ -191,11 +203,21 @@ public final class HttpUtil {
 	public static Result post(String url, Map<String, String> paramMap, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
 		String content = "";
-		HttpClient httpClient = null;
+		CloseableHttpClient httpClient = null;
 		try {
-			httpClient = new DefaultHttpClient();
 			if (timeoutMilliseconds > 0) {
-				httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, timeoutMilliseconds);
+				RequestConfig requestConfig = RequestConfig.custom()
+					.setSocketTimeout(timeoutMilliseconds)
+					.build();
+				SocketConfig socketConfig = SocketConfig.custom()
+					.setSoTimeout(timeoutMilliseconds)
+					.build();
+				httpClient = HttpClients.custom()
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultSocketConfig(socketConfig)
+					.build();
+			} else {
+				httpClient = HttpClients.createDefault();
 			}
 			HttpPost httpPost = new HttpPost(url);
 			if (headerMap != null) {
@@ -221,7 +243,10 @@ public final class HttpUtil {
 			throw new RuntimeException(e);
 		} finally {
 			if (httpClient != null) {
-				httpClient.getConnectionManager().shutdown();
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		return new Result(statusCode, content);
@@ -274,11 +299,21 @@ public final class HttpUtil {
 	public static Result post(String url, Map<String, String> paramMap, List<File> fileList, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
 		String content = "";
-		HttpClient httpClient = null;
+		CloseableHttpClient httpClient = null;
 		try {
-			httpClient = new DefaultHttpClient();
 			if (timeoutMilliseconds > 0) {
-				httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, timeoutMilliseconds);
+				RequestConfig requestConfig = RequestConfig.custom()
+					.setSocketTimeout(timeoutMilliseconds)
+					.build();
+				SocketConfig socketConfig = SocketConfig.custom()
+					.setSoTimeout(timeoutMilliseconds)
+					.build();
+				httpClient = HttpClients.custom()
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultSocketConfig(socketConfig)
+					.build();
+			} else {
+				httpClient = HttpClients.createDefault();
 			}
 			HttpPost httpPost = new HttpPost(url);
 			if (headerMap != null) {
@@ -286,19 +321,19 @@ public final class HttpUtil {
 					httpPost.addHeader(entry.getKey(), entry.getValue());
 				}
 			}
-			MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+			MultipartEntityBuilder meb = MultipartEntityBuilder.create();
+			meb.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 			if (paramMap != null) {
 				for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-					reqEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
+					meb.addTextBody(entry.getKey(), entry.getValue());
 				}
 			}
 			if (fileList != null) {
 				for (File file : fileList) {
-					ContentBody contentBody = new FileBody(file);
-					reqEntity.addPart("userfile", contentBody);
+					meb.addBinaryBody("userfile", file);
 				}
 			}
-			httpPost.setEntity(reqEntity);
+			httpPost.setEntity(meb.build());
 			HttpResponse response = httpClient.execute(httpPost);
 			statusCode = response.getStatusLine().getStatusCode();
 			HttpEntity resEntity = response.getEntity();
@@ -309,7 +344,10 @@ public final class HttpUtil {
 			throw new RuntimeException(e);
 		} finally {
 			if (httpClient != null) {
-				httpClient.getConnectionManager().shutdown();
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		return new Result(statusCode, content);
@@ -406,11 +444,21 @@ public final class HttpUtil {
 	public static Result post(String url, String paramStr, String contentType, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
 		String content = "";
-		HttpClient httpClient = null;
+		CloseableHttpClient httpClient = null;
 		try {
-			httpClient = new DefaultHttpClient();
 			if (timeoutMilliseconds > 0) {
-				httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, timeoutMilliseconds);
+				RequestConfig requestConfig = RequestConfig.custom()
+					.setSocketTimeout(timeoutMilliseconds)
+					.build();
+				SocketConfig socketConfig = SocketConfig.custom()
+					.setSoTimeout(timeoutMilliseconds)
+					.build();
+				httpClient = HttpClients.custom()
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultSocketConfig(socketConfig)
+					.build();
+			} else {
+				httpClient = HttpClients.createDefault();
 			}
 			HttpPost httpPost = new HttpPost(url);
 			if (headerMap != null) {
@@ -435,7 +483,10 @@ public final class HttpUtil {
 			throw new RuntimeException(e);
 		} finally {
 			if (httpClient != null) {
-				httpClient.getConnectionManager().shutdown();
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		return new Result(statusCode, content);

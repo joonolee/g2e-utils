@@ -6,6 +6,9 @@ import java.util.Map;
 
 import kr.co.g2e.utils.util.HttpUtil.Result;
 
+/**
+ * 카카오 OPEN API 기능을 이용할 수 있는 유틸리티 클래스
+ */
 public class KakaoUtil {
 	/**
 	 * REVERSE GEOCODING API
