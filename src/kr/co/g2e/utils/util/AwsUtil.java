@@ -23,6 +23,15 @@ public class AwsUtil {
 	private AwsUtil() {
 	}
 
+	/**
+	 * OCR 판독
+	 * @param accessKeyId 액세스키 아이디
+	 * @param secretAccessKey 액세스 시크릿키
+	 * @param endpointUrl API 엔드포인트 주소
+	 * @param region 지역
+	 * @param imageData 이미지 데이터
+	 * @return 판독 결과 문자열
+	 */
 	public static String textract(String accessKeyId, String secretAccessKey, String endpointUrl, String region, ByteBuffer imageData) {
 		EndpointConfiguration awsEndpoint = new EndpointConfiguration(endpointUrl, region);
 		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);

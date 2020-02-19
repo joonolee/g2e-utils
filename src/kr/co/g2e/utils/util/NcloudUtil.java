@@ -142,7 +142,7 @@ public final class NcloudUtil {
 	 * @param imageFormat 판독할 이미지 주소
 	 * @param imageUrl 이미지 URL (BASE64 인코딩 이미지 데이터일때는 null). URL과 이미지 데이터가 모두 존재하면 데이터를 사용하고 URL은 무시
 	 * @param imageData BASE64 인코딩 이미지 데이터 (url 형식일때는 null)
-	 * @return
+	 * @return 판독 결과 문자열
 	 */
 	@SuppressWarnings("unchecked")
 	public static String ocr(String apigwUrl, String secretKey, String imageFormat, String imageUrl, String imageData) {
