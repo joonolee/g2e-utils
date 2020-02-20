@@ -1,5 +1,6 @@
 package kr.co.g2e.utils.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,12 @@ public final class NcloudUtil {
 	 */
 	private static final String EMAIL_API_DOMAIN = "https://mail.apigw.ntruss.com";
 	private static final String EMAIL_API_URL = "/api/v1/mails";
+
+	/**
+	 * STT API
+	 */
+	private static final String STT_API_DOMAIN = "https://naveropenapi.apigw.ntruss.com";
+	private static final String STT_API_URL = "/recog/v1/stt";
 
 	/**
 	 * 라인 구분자
@@ -197,6 +204,41 @@ public final class NcloudUtil {
 						return buffer.toString();
 					}
 				}
+			}
+		} catch (Throwable e) {
+			// 예외는 무시
+		}
+		return "";
+	}
+
+	/**
+	 * STT (Speech-To-Text)
+	 * @param clientId 앱 등록 시 발급받은 Client ID
+	 * @param clientSecret 앱 등록 시 발급 받은 Client Secret
+	 * @param lang 언어 코드 (Kor, Jpn, Eng, Chn)
+	 * @param soundFile 사운드 파일 (mp3, aac, ac3, ogg, flac, wav - 최대 60초)
+	 * @return 인식 결과 문자열
+	 */
+	@SuppressWarnings("unchecked")
+	public static String stt(String clientId, String clientSecret, String lang, File soundFile) {
+		String subUrl = STT_API_URL + "?lang=" + lang;
+		String fullUrl = STT_API_DOMAIN + subUrl;
+		Map<String, String> headerMap = new HashMap<String, String>();
+		headerMap.put("X-NCP-APIGW-API-KEY-ID", clientId);
+		headerMap.put("X-NCP-APIGW-API-KEY", clientSecret);
+		headerMap.put("Content-Type", "application/octet-stream");
+		/* 파라미터 설명
+		[필수]image: mp3, aac, ac3, ogg, flac, wav - 바이너리 사운드 데이터 (최대 60초) (string)
+		 */
+		// 결과 맵 생성
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			// 요청
+			Result result = HttpUtil.post(fullUrl, soundFile, headerMap);
+			String json = result.getContent();
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
+			if (resultMap != null) {
+				return (String) resultMap.get("text");
 			}
 		} catch (Throwable e) {
 			// 예외는 무시

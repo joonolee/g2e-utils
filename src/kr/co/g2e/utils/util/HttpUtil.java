@@ -14,6 +14,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -471,6 +472,83 @@ public final class HttpUtil {
 				if (contentType != null) {
 					ent.setContentType(contentType);
 				}
+				httpPost.setEntity(ent);
+			}
+			HttpResponse response = httpClient.execute(httpPost);
+			statusCode = response.getStatusLine().getStatusCode();
+			HttpEntity resEntity = response.getEntity();
+			if (resEntity != null) {
+				content = EntityUtils.toString(resEntity);
+			}
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return new Result(statusCode, content);
+	}
+
+	/**
+	 * url 을 Post 방식으로 호출하고 결과를 리턴한다.
+	 * @param url url 주소
+	 * @param file 전송할 파일
+	 * @return Result 객체
+	 */
+	public static Result post(String url, File file) {
+		return post(url, file, null, 0);
+	}
+
+	/**
+	 * url 을 Post 방식으로 호출하고 결과를 리턴한다.
+	 * @param url url 주소
+	 * @param file 전송할 파일
+	 * @param headerMap 헤더 맵 객체
+	 * @return Result 객체
+	 */
+	public static Result post(String url, File file, Map<String, String> headerMap) {
+		return post(url, file, headerMap, 0);
+	}
+
+	/**
+	 * url 을 Post 방식으로 호출하고 결과를 리턴한다.
+	 * @param url url 주소
+	 * @param file 전송할 파일
+	 * @param headerMap 헤더 맵 객체
+	 * @param timeoutMilliseconds 소켓 타임아웃 시간(밀리세컨드)
+	 * @return Result 객체
+	 */
+	public static Result post(String url, File file, Map<String, String> headerMap, int timeoutMilliseconds) {
+		int statusCode = 0;
+		String content = "";
+		CloseableHttpClient httpClient = null;
+		try {
+			if (timeoutMilliseconds > 0) {
+				RequestConfig requestConfig = RequestConfig.custom()
+					.setSocketTimeout(timeoutMilliseconds)
+					.build();
+				SocketConfig socketConfig = SocketConfig.custom()
+					.setSoTimeout(timeoutMilliseconds)
+					.build();
+				httpClient = HttpClients.custom()
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultSocketConfig(socketConfig)
+					.build();
+			} else {
+				httpClient = HttpClients.createDefault();
+			}
+			HttpPost httpPost = new HttpPost(url);
+			if (headerMap != null) {
+				for (Map.Entry<String, String> entry : headerMap.entrySet()) {
+					httpPost.addHeader(entry.getKey(), entry.getValue());
+				}
+			}
+			if (file != null) {
+				FileEntity ent = new FileEntity(file);
 				httpPost.setEntity(ent);
 			}
 			HttpResponse response = httpClient.execute(httpPost);

@@ -1,7 +1,13 @@
 package kr.co.g2e.utils.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -32,25 +38,40 @@ public class AwsUtil {
 	 * @param imageData 이미지 데이터
 	 * @return 판독 결과 문자열
 	 */
-	public static String textract(String accessKeyId, String secretAccessKey, String endpointUrl, String region, ByteBuffer imageData) {
-		EndpointConfiguration awsEndpoint = new EndpointConfiguration(endpointUrl, region);
-		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-		AmazonTextract client = AmazonTextractClientBuilder
-			.standard()
-			.withEndpointConfiguration(awsEndpoint)
-			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-			.build();
-		DetectDocumentTextRequest request = new DetectDocumentTextRequest()
-			.withDocument(new Document().withBytes(imageData));
-		DetectDocumentTextResult result = client.detectDocumentText(request);
-		List<Block> blocks = result.getBlocks();
-		StringBuilder buffer = new StringBuilder();
-		for (Block block : blocks) {
-			if ((block.getBlockType()).equals("LINE")) {
-				buffer.append(block.getText());
-				buffer.append(" ");
+	public static String textract(String accessKeyId, String secretAccessKey, String endpointUrl, String region, File soundFile) {
+		InputStream inputStream = null;
+		try {
+			inputStream = new FileInputStream(soundFile);
+			ByteBuffer imageBytes = ByteBuffer.wrap(IOUtils.toByteArray(inputStream));
+			EndpointConfiguration awsEndpoint = new EndpointConfiguration(endpointUrl, region);
+			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+			AmazonTextract client = AmazonTextractClientBuilder
+				.standard()
+				.withEndpointConfiguration(awsEndpoint)
+				.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+				.build();
+			DetectDocumentTextRequest request = new DetectDocumentTextRequest()
+				.withDocument(new Document().withBytes(imageBytes));
+			DetectDocumentTextResult result = client.detectDocumentText(request);
+			List<Block> blocks = result.getBlocks();
+			StringBuilder buffer = new StringBuilder();
+			for (Block block : blocks) {
+				if ((block.getBlockType()).equals("LINE")) {
+					buffer.append(block.getText());
+					buffer.append(" ");
+				}
+			}
+			return buffer.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+				}
 			}
 		}
-		return buffer.toString();
+		return "";
 	}
 }
