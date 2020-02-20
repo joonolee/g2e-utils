@@ -43,8 +43,8 @@ public class AwsUtil {
 		try {
 			inputStream = new FileInputStream(soundFile);
 			ByteBuffer imageBytes = ByteBuffer.wrap(IOUtils.toByteArray(inputStream));
-			EndpointConfiguration awsEndpoint = new EndpointConfiguration(endpointUrl, region);
 			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+			EndpointConfiguration awsEndpoint = new EndpointConfiguration(endpointUrl, region);
 			AmazonTextract client = AmazonTextractClientBuilder
 				.standard()
 				.withEndpointConfiguration(awsEndpoint)
