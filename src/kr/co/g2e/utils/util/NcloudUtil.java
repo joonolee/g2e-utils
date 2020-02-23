@@ -1,6 +1,7 @@
 package kr.co.g2e.utils.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 
 import kr.co.g2e.utils.util.HttpUtil.Result;
 
@@ -147,12 +149,11 @@ public final class NcloudUtil {
 	 * @param apigwUrl API 게이트웨이 주소
 	 * @param secretKey 시크릿키
 	 * @param imageFormat 판독할 이미지 주소
-	 * @param imageUrl 이미지 URL (BASE64 인코딩 이미지 데이터일때는 null). URL과 이미지 데이터가 모두 존재하면 데이터를 사용하고 URL은 무시
-	 * @param imageData BASE64 인코딩 이미지 데이터 (url 형식일때는 null)
+	 * @param imageUrl 이미지 URL
 	 * @return 판독 결과 문자열
 	 */
 	@SuppressWarnings("unchecked")
-	public static String ocr(String apigwUrl, String secretKey, String imageFormat, String imageUrl, String imageData) {
+	public static String ocr(String apigwUrl, String secretKey, String imageFormat, String imageUrl) {
 		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵(값은 UTF-8 URL인코딩하여 셋팅해야 함)
 		headerMap.put("Content-Type", "application/json; charset=utf-8");
 		headerMap.put("X-OCR-SECRET", secretKey);
@@ -174,9 +175,81 @@ public final class NcloudUtil {
 		Map<String, String> imageMap = new HashMap<String, String>();
 		imageMap.put("format", imageFormat);
 		imageMap.put("name", "ocr_image");
-		imageMap.put("data", imageData);
 		imageMap.put("url", imageUrl);
 		paramMap.put("images", Arrays.asList(imageMap));
+		// 파라미터 맵 생성
+		paramMap.put("lang", "ko");
+		paramMap.put("requestId", UUID.randomUUID().toString());
+		paramMap.put("timestamp", timestamp);
+		paramMap.put("version", "V1");
+		// 결과 맵 생성
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		try {
+			// 요청
+			Result result = HttpUtil.post(apigwUrl, JsonUtil.stringify(paramMap), headerMap);
+			String json = result.getContent();
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
+			List<Map<String, Object>> imagesList = (List<Map<String, Object>>) resultMap.get("images");
+			if (imagesList != null && imagesList.size() > 0) {
+				Map<String, Object> ocrMap = imagesList.get(0);
+				if (ocrMap != null) {
+					List<Map<String, Object>> fieldsList = (List<Map<String, Object>>) ocrMap.get("fields");
+					if (fieldsList != null) {
+						StringBuilder buffer = new StringBuilder();
+						for (Map<String, Object> field : fieldsList) {
+							String inferText = (String) field.get("inferText"); // 추론된 문자열 추출
+							buffer.append(inferText);
+							buffer.append(" ");
+						}
+						return buffer.toString();
+					}
+				}
+			}
+		} catch (Throwable e) {
+			// 예외는 무시
+		}
+		return "";
+	}
+
+	/**
+	 * OCR 판독
+	 * @param apigwUrl API 게이트웨이 주소
+	 * @param secretKey 시크릿키
+	 * @param imageFormat 판독할 이미지 주소
+	 * @param imageFile 이미지 파일
+	 * @return 판독 결과 문자열
+	 */
+	@SuppressWarnings("unchecked")
+	public static String ocr(String apigwUrl, String secretKey, String imageFormat, File imageFile) {
+		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵(값은 UTF-8 URL인코딩하여 셋팅해야 함)
+		headerMap.put("Content-Type", "application/json; charset=utf-8");
+		headerMap.put("X-OCR-SECRET", secretKey);
+		/* 파라미터 설명
+		[필수]version: 버전 정보 필수로 V1 입력합니다.(string)
+		[필수]requestId: API 호출 UUID입니다.(string)
+		[필수]timestamp: API 호출 Timestamp 값입니다.	
+		<옵션>lang: OCR 인식시 요청할 언어 정보입니다.	lang 필드가 설정되지 않은 경우, ‘ko’가 default로 설정됩니다.(string)
+		[필수]images: Json array로 입력되며, 현재는 1개의 이미지 입력만 허용 됩니다. (한국어/일본어)(json array)
+		[필수]images.format: 이미지 포맷을 설정합니다.	“jpg”, “jpeg”, “png” 이미지 형식을 지원합니다.(string)
+		<옵션>images.url: images.url 혹은 image.data 중 하나가 존재해야 합니다.	URL은 이미지를 가져 올 수 있는 공개 URL이어야 합니다.(string)
+		<옵션>image.data: images.url 혹은 image.data 중 하나가 존재해야 합니다. URL과 데이터가 모두 존재하면 데이터를 사용하고 URL은 무시합니다. image.data는 base64 인코딩 이미지 바이트입니다.(string)
+		[필수]image.name: 이미지 명을 입력합니다. 이미지를 식별하는데 사용되며, 응답 결과 확인에 사용됩니다.(string)
+		<옵션>image.templateIds: 텍스트 OCR API에서는 사용되지 않습니다. Template OCR API에서는 이 필드를 설정하지 않으면 도메인에 배포된 모든 서비스 템플릿으로 자동 분류됩니다.(json array)
+		 */
+		long timestamp = new Date().getTime();
+		Map<String, Object> paramMap = new HashMap<String, Object>(); // 파라미터 맵
+		try {
+			// images 맵 생성
+			Map<String, String> imageMap = new HashMap<String, String>();
+			imageMap.put("format", imageFormat);
+			imageMap.put("name", "ocr_image");
+			byte[] fileContent = FileUtils.readFileToByteArray(imageFile);
+			String encodedString = Base64.encodeBase64String(fileContent);
+			imageMap.put("data", encodedString);
+			paramMap.put("images", Arrays.asList(imageMap));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		// 파라미터 맵 생성
 		paramMap.put("lang", "ko");
 		paramMap.put("requestId", UUID.randomUUID().toString());
@@ -216,7 +289,7 @@ public final class NcloudUtil {
 	 * @param clientId 앱 등록 시 발급받은 Client ID
 	 * @param clientSecret 앱 등록 시 발급 받은 Client Secret
 	 * @param lang 언어 코드 (Kor, Jpn, Eng, Chn)
-	 * @param soundFile 사운드 파일 (mp3, aac, ac3, ogg, flac, wav - 최대 60초)
+	 * @param soundFile 음성 파일 (mp3, aac, ac3, ogg, flac, wav - 최대 60초)
 	 * @return 인식 결과 문자열
 	 */
 	@SuppressWarnings("unchecked")
@@ -227,9 +300,6 @@ public final class NcloudUtil {
 		headerMap.put("X-NCP-APIGW-API-KEY-ID", clientId);
 		headerMap.put("X-NCP-APIGW-API-KEY", clientSecret);
 		headerMap.put("Content-Type", "application/octet-stream");
-		/* 파라미터 설명
-		[필수]image: mp3, aac, ac3, ogg, flac, wav - 바이너리 사운드 데이터 (최대 60초) (string)
-		 */
 		// 결과 맵 생성
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
