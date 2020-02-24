@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -35,32 +36,45 @@ public class GcloudUtil {
 
 	/**
 	 * OCR 판독
-	 * @param subscriptionKey 서브스크립션키
+	 * @param apiKey API키
 	 * @param imageUrl 이미지 주소
 	 * @return 판독 결과 문자열
 	 */
-	public static String ocr(String subscriptionKey, String imageUrl) {
-		String subUrl = OCR_API_URL;
+	@SuppressWarnings("unchecked")
+	public static String ocr(String apiKey, String imageUrl) {
+		String subUrl = OCR_API_URL + "?key=" + apiKey;
 		String fullUrl = OCR_API_DOMAIN + subUrl;
-		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵(값은 UTF-8 URL인코딩하여 셋팅해야 함)
+		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵
 		headerMap.put("Content-Type", "application/json");
-		headerMap.put("Authorization", "Bearer " + subscriptionKey);
 		Map<String, Object> paramMap = new HashMap<String, Object>(); // 파라미터 맵
 		Map<String, Object> requestMap = new HashMap<String, Object>(); // 요청 맵
 		Map<String, Object> imageMap = new HashMap<String, Object>(); // 이미지 맵
-		imageMap.put("uri", imageUrl);
+		Map<String, Object> sourceMap = new HashMap<String, Object>(); // 소스 맵
+		sourceMap.put("imageUri", imageUrl);
+		imageMap.put("source", sourceMap);
 		requestMap.put("image", imageMap);
 		Map<String, Object> featureMap = new HashMap<String, Object>(); // 특징 맵
 		featureMap.put("type", "TEXT_DETECTION");
 		requestMap.put("features", Arrays.asList(featureMap));
 		paramMap.put("requests", Arrays.asList(requestMap));
 		// 결과 맵 생성
-		//Map<String, Object> resultMap = new HashMap<String, Object>();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			// 요청
 			Result result = HttpUtil.post(fullUrl, JsonUtil.stringify(paramMap), headerMap);
 			String json = result.getContent();
-			return json;
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
+			List<Map<String, Object>> responseList = (List<Map<String, Object>>) resultMap.get("responses");
+			if (responseList != null && responseList.size() > 0) {
+				Map<String, Object> ocrMap = responseList.get(0);
+				if (ocrMap != null) {
+					Map<String, Object> fullTextAnnotationMap = (Map<String, Object>) ocrMap.get("fullTextAnnotation");
+					if (fullTextAnnotationMap != null) {
+						String text = (String) fullTextAnnotationMap.get("text");
+						return text.replaceAll("\n", " ");
+					}
+				}
+			}
 		} catch (Throwable e) {
 			// 예외는 무시
 		}
@@ -69,16 +83,16 @@ public class GcloudUtil {
 
 	/**
 	 * OCR 판독
-	 * @param subscriptionKey 서브스크립션키
+	 * @param apiKey API키
 	 * @param imageFile 이미지 파일
 	 * @return 판독 결과 문자열
 	 */
-	public static String ocr(String subscriptionKey, File imageFile) {
-		String subUrl = OCR_API_URL;
+	@SuppressWarnings("unchecked")
+	public static String ocr(String apiKey, File imageFile) {
+		String subUrl = OCR_API_URL + "?key=" + apiKey;
 		String fullUrl = OCR_API_DOMAIN + subUrl;
-		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵(값은 UTF-8 URL인코딩하여 셋팅해야 함)
+		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵
 		headerMap.put("Content-Type", "application/json");
-		headerMap.put("Authorization", "Bearer " + subscriptionKey);
 		Map<String, Object> paramMap = new HashMap<String, Object>(); // 파라미터 맵
 		Map<String, Object> requestMap = new HashMap<String, Object>(); // 요청 맵
 		try {
@@ -96,35 +110,54 @@ public class GcloudUtil {
 		requestMap.put("features", Arrays.asList(featureMap));
 		paramMap.put("requests", Arrays.asList(requestMap));
 		// 결과 맵 생성
-		//Map<String, Object> resultMap = new HashMap<String, Object>();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			// 요청
 			Result result = HttpUtil.post(fullUrl, JsonUtil.stringify(paramMap), headerMap);
 			String json = result.getContent();
-			return json;
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
+			List<Map<String, Object>> responseList = (List<Map<String, Object>>) resultMap.get("responses");
+			if (responseList != null && responseList.size() > 0) {
+				Map<String, Object> ocrMap = responseList.get(0);
+				if (ocrMap != null) {
+					Map<String, Object> fullTextAnnotationMap = (Map<String, Object>) ocrMap.get("fullTextAnnotation");
+					if (fullTextAnnotationMap != null) {
+						String text = (String) fullTextAnnotationMap.get("text");
+						return text.replaceAll("\n", " ");
+					}
+				}
+			}
 		} catch (Throwable e) {
 			// 예외는 무시
 		}
 		return "";
 	}
 
-	public static String stt(String apiKey, File audioFile) {
+	/**
+	 * STT (Speech-To-Text)
+	 * @param apiKey API키
+	 * @param soundFile 음성 파일
+	 * @return 인식 결과 문자열
+	 */
+	public static String stt(String apiKey, String lang, File soundFile) {
 		String subUrl = STT_API_URL + "?key=" + apiKey;
 		String fullUrl = STT_API_DOMAIN + subUrl;
 		Map<String, Object> paramMap = new HashMap<String, Object>(); // 파라미터 맵
 		// config 맵 생성
 		Map<String, String> configMap = new HashMap<String, String>();
+		configMap.put("languageCode", lang);
 		paramMap.put("config", configMap);
 		try {
 			// audio 맵 생성
 			Map<String, String> audioMap = new HashMap<String, String>();
-			byte[] fileContent = FileUtils.readFileToByteArray(audioFile);
+			byte[] fileContent = FileUtils.readFileToByteArray(soundFile);
 			String encodedString = Base64.encodeBase64String(fileContent);
 			audioMap.put("content", encodedString);
 			paramMap.put("audio", audioMap);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		System.out.println(JsonUtil.stringify(paramMap));
 		// 결과 맵 생성
 		//Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
