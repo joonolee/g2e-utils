@@ -139,17 +139,22 @@ public class GcloudUtil {
 	 * @param soundFile 음성 파일
 	 * @return 인식 결과 문자열
 	 */
+	@SuppressWarnings("unchecked")
 	public static String stt(String apiKey, String lang, File soundFile) {
 		String subUrl = STT_API_URL + "?key=" + apiKey;
 		String fullUrl = STT_API_DOMAIN + subUrl;
+		Map<String, String> headerMap = new HashMap<String, String>(); // 헤더 맵
+		headerMap.put("Content-Type", "application/json");
 		Map<String, Object> paramMap = new HashMap<String, Object>(); // 파라미터 맵
 		// config 맵 생성
-		Map<String, String> configMap = new HashMap<String, String>();
+		Map<String, Object> configMap = new HashMap<String, Object>();
 		configMap.put("languageCode", lang);
+		configMap.put("sampleRateHertz", 16000);
+		configMap.put("enableWordTimeOffsets", false);
 		paramMap.put("config", configMap);
 		try {
 			// audio 맵 생성
-			Map<String, String> audioMap = new HashMap<String, String>();
+			Map<String, Object> audioMap = new HashMap<String, Object>();
 			byte[] fileContent = FileUtils.readFileToByteArray(soundFile);
 			String encodedString = Base64.encodeBase64String(fileContent);
 			audioMap.put("content", encodedString);
@@ -157,14 +162,24 @@ public class GcloudUtil {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		System.out.println(JsonUtil.stringify(paramMap));
 		// 결과 맵 생성
-		//Map<String, Object> resultMap = new HashMap<String, Object>();
+		Map<String, Object> resultMap = new HashMap<String, Object>();
 		try {
 			// 요청
-			Result result = HttpUtil.post(fullUrl, JsonUtil.stringify(paramMap));
+			Result result = HttpUtil.post(fullUrl, JsonUtil.stringify(paramMap), headerMap);
 			String json = result.getContent();
-			return json;
+			resultMap = (Map<String, Object>) JsonUtil.parse(json);
+			List<Map<String, Object>> resultList = (List<Map<String, Object>>) resultMap.get("results");
+			if (resultList != null && resultList.size() > 0) {
+				Map<String, Object> sttMap = resultList.get(0);
+				if (sttMap != null) {
+					List<Map<String, Object>> alternativeList = (List<Map<String, Object>>) sttMap.get("alternatives");
+					if (alternativeList != null && alternativeList.size() > 0) {
+						Map<String, Object> alternativeMap = alternativeList.get(0);
+						return (String) alternativeMap.get("transcript");
+					}
+				}
+			}
 		} catch (Throwable e) {
 			// 예외는 무시
 		}
