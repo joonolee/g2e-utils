@@ -3,9 +3,12 @@ package kr.co.g2e.utils.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -41,11 +44,12 @@ public final class HttpUtil {
 	public static class Result {
 		private int statusCode;
 		private String content;
+		private Map<String, String> headerMap;
 
-		public Result(int statusCode, String content) {
-			super();
+		public Result(int statusCode, String content, Map<String, String> headerMap) {
 			this.statusCode = statusCode;
 			this.content = content;
+			this.headerMap = headerMap;
 		}
 
 		public int getStatusCode() {
@@ -56,9 +60,13 @@ public final class HttpUtil {
 			return content;
 		}
 
+		public Map<String, String> getHeaderMap() {
+			return Collections.unmodifiableMap(this.headerMap);
+		}
+
 		@Override
 		public String toString() {
-			return String.format("Result={ statusCode : %d, content : %s }", getStatusCode(), getContent());
+			return String.format("Result={ statusCode : %d, content : %s, headerMap : %s }", getStatusCode(), getContent(), getHeaderMap());
 		}
 	}
 
@@ -100,6 +108,7 @@ public final class HttpUtil {
 	 */
 	public static Result get(String url, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
+		Map<String, String> responseHeaderMap = new HashMap<String, String>();
 		String content = "";
 		CloseableHttpClient httpClient = null;
 		try {
@@ -125,6 +134,9 @@ public final class HttpUtil {
 			}
 			HttpResponse response = httpClient.execute(httpGet);
 			statusCode = response.getStatusLine().getStatusCode();
+			for (Header header : response.getAllHeaders()) {
+				responseHeaderMap.put(header.getName(), header.getValue());
+			}
 			HttpEntity resEntity = response.getEntity();
 			if (resEntity != null) {
 				content = EntityUtils.toString(resEntity);
@@ -139,7 +151,7 @@ public final class HttpUtil {
 				}
 			}
 		}
-		return new Result(statusCode, content);
+		return new Result(statusCode, content, responseHeaderMap);
 	}
 
 	/**
@@ -203,6 +215,7 @@ public final class HttpUtil {
 	 */
 	public static Result post(String url, Map<String, String> paramMap, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
+		Map<String, String> responseHeaderMap = new HashMap<String, String>();
 		String content = "";
 		CloseableHttpClient httpClient = null;
 		try {
@@ -236,6 +249,9 @@ public final class HttpUtil {
 			}
 			HttpResponse response = httpClient.execute(httpPost);
 			statusCode = response.getStatusLine().getStatusCode();
+			for (Header header : response.getAllHeaders()) {
+				responseHeaderMap.put(header.getName(), header.getValue());
+			}
 			HttpEntity resEntity = response.getEntity();
 			if (resEntity != null) {
 				content = EntityUtils.toString(resEntity);
@@ -250,7 +266,7 @@ public final class HttpUtil {
 				}
 			}
 		}
-		return new Result(statusCode, content);
+		return new Result(statusCode, content, responseHeaderMap);
 	}
 
 	/**
@@ -299,6 +315,7 @@ public final class HttpUtil {
 	 */
 	public static Result post(String url, Map<String, String> paramMap, List<File> fileList, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
+		Map<String, String> responseHeaderMap = new HashMap<String, String>();
 		String content = "";
 		CloseableHttpClient httpClient = null;
 		try {
@@ -337,6 +354,9 @@ public final class HttpUtil {
 			httpPost.setEntity(meb.build());
 			HttpResponse response = httpClient.execute(httpPost);
 			statusCode = response.getStatusLine().getStatusCode();
+			for (Header header : response.getAllHeaders()) {
+				responseHeaderMap.put(header.getName(), header.getValue());
+			}
 			HttpEntity resEntity = response.getEntity();
 			if (resEntity != null) {
 				content = EntityUtils.toString(resEntity);
@@ -351,7 +371,7 @@ public final class HttpUtil {
 				}
 			}
 		}
-		return new Result(statusCode, content);
+		return new Result(statusCode, content, responseHeaderMap);
 	}
 
 	/**
@@ -444,6 +464,7 @@ public final class HttpUtil {
 	 */
 	public static Result post(String url, String paramStr, String contentType, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
+		Map<String, String> responseHeaderMap = new HashMap<String, String>();
 		String content = "";
 		CloseableHttpClient httpClient = null;
 		try {
@@ -476,6 +497,9 @@ public final class HttpUtil {
 			}
 			HttpResponse response = httpClient.execute(httpPost);
 			statusCode = response.getStatusLine().getStatusCode();
+			for (Header header : response.getAllHeaders()) {
+				responseHeaderMap.put(header.getName(), header.getValue());
+			}
 			HttpEntity resEntity = response.getEntity();
 			if (resEntity != null) {
 				content = EntityUtils.toString(resEntity);
@@ -490,7 +514,7 @@ public final class HttpUtil {
 				}
 			}
 		}
-		return new Result(statusCode, content);
+		return new Result(statusCode, content, responseHeaderMap);
 	}
 
 	/**
@@ -524,6 +548,7 @@ public final class HttpUtil {
 	 */
 	public static Result post(String url, File file, Map<String, String> headerMap, int timeoutMilliseconds) {
 		int statusCode = 0;
+		Map<String, String> responseHeaderMap = new HashMap<String, String>();
 		String content = "";
 		CloseableHttpClient httpClient = null;
 		try {
@@ -553,6 +578,9 @@ public final class HttpUtil {
 			}
 			HttpResponse response = httpClient.execute(httpPost);
 			statusCode = response.getStatusLine().getStatusCode();
+			for (Header header : response.getAllHeaders()) {
+				responseHeaderMap.put(header.getName(), header.getValue());
+			}
 			HttpEntity resEntity = response.getEntity();
 			if (resEntity != null) {
 				content = EntityUtils.toString(resEntity);
@@ -567,6 +595,6 @@ public final class HttpUtil {
 				}
 			}
 		}
-		return new Result(statusCode, content);
+		return new Result(statusCode, content, responseHeaderMap);
 	}
 }

@@ -197,7 +197,7 @@ public final class NcloudUtil {
 					if (fieldsList != null) {
 						StringBuilder buffer = new StringBuilder();
 						for (Map<String, Object> field : fieldsList) {
-							String inferText = (String) field.get("inferText"); // 추론된 문자열 추출
+							String inferText = (String) field.get("inferText"); // 추론한 문자열 추출
 							buffer.append(inferText);
 							buffer.append(" ");
 						}
