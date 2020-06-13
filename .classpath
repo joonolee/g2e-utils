@@ -3,8 +3,11 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/activation-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-core-1.11.723.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-textract-1.11.723.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-core-1.11.802.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-kms-1.11.802.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-s3-1.11.802.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-ses-1.11.802.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-textract-1.11.802.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk16-1.46.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.1.jar"/>
