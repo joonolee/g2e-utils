@@ -2,19 +2,22 @@ package kr.co.g2e.utils.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.Body;
@@ -50,19 +53,65 @@ public class AwsUtil {
 	 * @param file 파일
 	 */
 	public static void s3PutObject(String region, String accessKey, String secretAccessKey, String bucketName, String fileKey, File file) {
-		try {
-			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
-			AmazonS3 s3Client = AmazonS3ClientBuilder
-				.standard()
-				.withRegion(region)
-				.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-				.build();
-			PutObjectRequest request = new PutObjectRequest(bucketName, fileKey, file);
-			request.setCannedAcl(CannedAccessControlList.PublicRead); // 파일은 공개적으로 읽을 수 있도록 권한 설정 
-			s3Client.putObject(request);
-		} catch (SdkClientException e) {
-			e.printStackTrace();
+		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
+		AmazonS3 s3Client = AmazonS3ClientBuilder
+			.standard()
+			.withRegion(region)
+			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+			.build();
+		PutObjectRequest request = new PutObjectRequest(bucketName, fileKey, file);
+		s3Client.putObject(request);
+	}
+
+	/**
+	 * S3(Simple Storage Service)에서 파일 다운로드
+	 * @param region 지역
+	 * @param accessKey 액세스키
+	 * @param secretAccessKey 액세스 시크릿키
+	 * @param bucketName 버킷명
+	 * @param fileKey 파일키(UUID)
+	 * @return s3파일, 다운로드 에러시 null 리턴
+	 */
+	public static File s3GetObject(String region, String accessKey, String secretAccessKey, String bucketName, String fileKey) {
+		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
+		AmazonS3 s3Client = AmazonS3ClientBuilder
+			.standard()
+			.withRegion(region)
+			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+			.build();
+		GetObjectRequest request = new GetObjectRequest(bucketName, fileKey);
+		File file = new File(System.getProperty("java.io.tmpdir"), fileKey);
+		try (S3Object o = s3Client.getObject(request);
+			S3ObjectInputStream s3is = o.getObjectContent();
+			FileOutputStream fos = new FileOutputStream(file)) {
+			byte[] read_buf = new byte[1024];
+			int read_len = 0;
+			while ((read_len = s3is.read(read_buf)) > 0) {
+				fos.write(read_buf, 0, read_len);
+			}
+			return file;
+		} catch (IOException e) {
 		}
+		return null; // 에러 발생시 null 리턴
+	}
+
+	/**
+	 * S3(Simple Storage Service)에서 파일 삭제
+	 * @param region 지역
+	 * @param accessKey 액세스키
+	 * @param secretAccessKey 액세스 시크릿키
+	 * @param bucketName 버킷명
+	 * @param fileKey 파일키(UUID)
+	 */
+	public static void s3DeleteObject(String region, String accessKey, String secretAccessKey, String bucketName, String fileKey) {
+		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
+		AmazonS3 s3Client = AmazonS3ClientBuilder
+			.standard()
+			.withRegion(region)
+			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+			.build();
+		DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileKey);
+		s3Client.deleteObject(request);
 	}
 
 	/**
@@ -77,29 +126,25 @@ public class AwsUtil {
 	 * @param toAddresses 받는사람 이메일주소들
 	 */
 	public static void ses(String region, String accessKey, String secretAccessKey, String fromAddress, String subject, String htmlBody, String textBody, String... toAddresses) {
-		try {
-			BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
-			AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder
-				.standard()
-				.withRegion(region)
-				.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-				.build();
-			SendEmailRequest request = new SendEmailRequest()
-				.withSource(fromAddress)
-				.withMessage(new Message()
-					.withBody(new Body()
-						.withHtml(new Content()
-							.withCharset("UTF-8").withData(htmlBody))
-						.withText(new Content()
-							.withCharset("UTF-8").withData(textBody)))
-					.withSubject(new Content()
+		BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
+		AmazonSimpleEmailService client = AmazonSimpleEmailServiceClientBuilder
+			.standard()
+			.withRegion(region)
+			.withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+			.build();
+		SendEmailRequest request = new SendEmailRequest()
+			.withSource(fromAddress)
+			.withMessage(new Message()
+				.withBody(new Body()
+					.withHtml(new Content()
+						.withCharset("UTF-8").withData(htmlBody))
+					.withText(new Content()
 						.withCharset("UTF-8").withData(textBody)))
-				.withDestination(
-					new Destination().withToAddresses(toAddresses));
-			client.sendEmail(request);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+				.withSubject(new Content()
+					.withCharset("UTF-8").withData(subject)))
+			.withDestination(
+				new Destination().withToAddresses(toAddresses));
+		client.sendEmail(request);
 	}
 
 	/**
@@ -136,7 +181,7 @@ public class AwsUtil {
 			}
 			return buffer.toString();
 		} catch (IOException e) {
-			e.printStackTrace();
+			// 예외는 무시
 		} finally {
 			if (inputStream != null) {
 				try {
