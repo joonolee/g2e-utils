@@ -467,6 +467,15 @@ public class CryptUtil {
 	}
 
 	/**
+	 * RSA 공개키, 개인키를 생성하여 Base64로 인코딩하여 반환한다. 공개키와 개인키는 | 문자로 구분된다. 
+	 * @return 공개키(base64인코딩)|개인키(base64인코딩) 형식의 문자열
+	 */
+	public static String genRSAKeyPairBase64String(int keysize) {
+		KeyPair keyPair = genRSAKeyPair(keysize);
+		return genRSAKeyPairBase64String(keyPair);
+	}
+
+	/**
 	 * RSA 공개키, 개인키를 생성하여 pem 파일로 저장한 후 Base64로 인코딩하여 반환한다. 공개키와 개인키는 | 문자로 구분된다. 
 	 * @param publicKeyFile 공개키 pem 파일
 	 * @param privateKeyFile 개인키 pem 파일
@@ -494,9 +503,18 @@ public class CryptUtil {
 	 * @return 2048비트 RSA 키쌍
 	 */
 	public static KeyPair genRSAKeyPair() {
+		return genRSAKeyPair(2048);
+	}
+
+	/**
+	 * keysize의 RSA 키쌍을 생성한다.
+	 * @param keysize 키사이즈
+	 * @return keysize RSA 키쌍
+	 */
+	public static KeyPair genRSAKeyPair(int keysize) {
 		try {
 			KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-			gen.initialize(2048, new SecureRandom());
+			gen.initialize(keysize, new SecureRandom());
 			return gen.generateKeyPair();
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
